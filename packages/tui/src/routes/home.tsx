@@ -98,10 +98,18 @@ export function Home() {
         </box>
         <box height={1} flexShrink={0} />
         <UpdateNotification width={logoWidth()} />
-        <box width="100%" maxWidth={75} zIndex={1000} paddingTop={1} flexShrink={0} position="relative">
-          <Prompt ref={bind} placeholders={placeholder} disabled={forms().length > 0} />
-        </box>
-        <box flexGrow={1} minHeight={0} />
+      </box>
+      <box
+        width="100%"
+        maxWidth={75}
+        alignSelf="center"
+        paddingLeft={dimensions().width < 44 ? 1 : 2}
+        paddingRight={dimensions().width < 44 ? 1 : 2}
+        paddingTop={1}
+        flexShrink={0}
+        position="relative"
+      >
+        <Prompt ref={bind} placeholders={placeholder} disabled={forms().length > 0} />
       </box>
       <box width="100%" flexShrink={0}>
         <Slot path="home.footer" />
