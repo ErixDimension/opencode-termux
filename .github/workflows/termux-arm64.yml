@@ -1,0 +1,62 @@
+name: OpenCode Termux ARM64 Build
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+      - master
+
+permissions:
+  contents: read
+
+concurrency:
+  group: opencode-termux-arm64-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build Linux ARM64 binary
+    runs-on: ubuntu-22.04
+    timeout-minutes: 45
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "1.4.4"
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Build Linux ARM64
+        run: |
+          bun run --cwd packages/cli build --single \
+            --target=opencode-linux-arm64 \
+            --outdir=/tmp/opencode-arm64-build
+
+      - name: Verify binary
+        shell: bash
+        run: |
+          set -euo pipefail
+          BIN="/tmp/opencode-arm64-build/cli-linux-arm64/bin/opencode"
+          test -s "$BIN"
+          chmod +x "$BIN"
+          file "$BIN"
+          sha256sum "$BIN" | tee /tmp/opencode-arm64-build/SHA256SUMS
+          echo "Binary tersedia; tes runtime tetap diperlukan di perangkat ARM64."
+
+      - name: Upload ARM64 binary
+        uses: actions/upload-artifact@v4
+        with:
+          name: opencode-v2.1.4-linux-arm64
+          path: |
+            /tmp/opencode-arm64-build/cli-linux-arm64/bin/opencode
+            /tmp/opencode-arm64-build/SHA256SUMS
+          if-no-files-found: error
+          retention-days: 14
