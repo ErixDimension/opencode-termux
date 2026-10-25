@@ -35,6 +35,8 @@ jobs:
         run: bun install --frozen-lockfile
 
       - name: Build Linux ARM64
+        env:
+          OPENCODE_VERSION: "2.1.4"
         run: |
           bun run --cwd packages/cli build --single \
             --target=opencode-linux-arm64 \
