@@ -6,6 +6,7 @@ on:
     branches:
       - main
       - master
+      - opencode-termux-arm64
 
 permissions:
   contents: read
