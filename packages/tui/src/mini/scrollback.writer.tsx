@@ -18,6 +18,8 @@ import { RUN_THEME_FALLBACK, transparent, type RunTheme } from "./theme"
 import type { EntryLayout, RunEntryBody, ScrollbackOptions, StreamCommit, TurnSummary } from "./types"
 import { todoMarker } from "../util/todo"
 import { PatchDiff } from "../component/patch-diff"
+import { useClipboard } from "../context/clipboard"
+import { useToast } from "../ui/toast"
 
 export function entryGroupKey(commit: StreamCommit): string | undefined {
   if (!commit.partID) {
@@ -87,6 +89,14 @@ export function RunEntryContent(props: {
   opts?: ScrollbackOptions
 }) {
   const renderer = useRenderer()
+  const clipboard = useClipboard()
+  const toast = useToast()
+  const copySource = (source: string) => {
+    void clipboard.write(source).then(
+      () => toast.show({ message: "Code copied to clipboard", variant: "success" }),
+      () => toast.show({ message: "Failed to copy code to clipboard", variant: "error" }),
+    )
+  }
   const borrowers: Renderable[] = []
   let fallback: SyntaxStyle | undefined
   const theme = createMemo(() => props.theme ?? RUN_THEME_FALLBACK)
@@ -162,37 +172,66 @@ export function RunEntryContent(props: {
         </text>
       </Match>
       <Match when={code()}>
-        <code
-          ref={(node: Renderable) => borrowers.push(node)}
-          width="100%"
-          wrapMode="word"
-          filetype={code()!.filetype}
-          drawUnstyledText={false}
-          streaming={streaming()}
-          syntaxStyle={syntax()}
-          content={code()!.content}
-          fg={color()}
-        />
+        <box width="100%" flexDirection="column" gap={1}>
+          <box width="100%" flexDirection="row" justifyContent="flex-end">
+            <text
+              fg={theme().block.muted}
+              onMouseUp={() => copySource(code()!.content)}
+            >
+              [ Copy ]
+            </text>
+          </box>
+          <scrollbox
+            width="100%"
+            maxHeight={12}
+            scrollY={true}
+            verticalScrollbarOptions={{ visible: true }}
+          >
+            <code
+              ref={(node: Renderable) => borrowers.push(node)}
+              width="100%"
+              wrapMode="word"
+              filetype={code()!.filetype}
+              drawUnstyledText={false}
+              streaming={streaming()}
+              syntaxStyle={syntax()}
+              content={code()!.content}
+              fg={color()}
+            />
+          </scrollbox>
+        </box>
       </Match>
       <Match when={code_snapshot()}>
         <box width="100%" flexDirection="column" gap={1}>
-          <text width="100%" wrapMode="word" fg={theme().block.muted}>
-            {code_snapshot()!.title}
-          </text>
-          <box width="100%" paddingLeft={1}>
-            <line_number width="100%" fg={theme().block.muted} minWidth={3} paddingRight={1}>
-              <code
-                ref={(node: Renderable) => borrowers.push(node)}
-                width="100%"
-                wrapMode="char"
-                filetype={toolFiletype(code_snapshot()!.file)}
-                streaming={false}
-                syntaxStyle={syntax()}
-                content={code_snapshot()!.content}
-                fg={theme().block.text}
-              />
-            </line_number>
+          <box width="100%" flexDirection="row" justifyContent="space-between">
+            <text width="100%" wrapMode="word" fg={theme().block.muted}>
+              {code_snapshot()!.title}
+            </text>
+            <text fg={theme().block.muted} onMouseUp={() => copySource(code_snapshot()!.content)}>
+              [ Copy ]
+            </text>
           </box>
+          <scrollbox
+            width="100%"
+            maxHeight={12}
+            scrollY={true}
+            verticalScrollbarOptions={{ visible: true }}
+          >
+            <box width="100%" paddingLeft={1}>
+              <line_number width="100%" fg={theme().block.muted} minWidth={3} paddingRight={1}>
+                <code
+                  ref={(node: Renderable) => borrowers.push(node)}
+                  width="100%"
+                  wrapMode="char"
+                  filetype={toolFiletype(code_snapshot()!.file)}
+                  streaming={false}
+                  syntaxStyle={syntax()}
+                  content={code_snapshot()!.content}
+                  fg={theme().block.text}
+                />
+              </line_number>
+            </box>
+          </scrollbox>
         </box>
       </Match>
       <Match when={diff_snapshot()}>

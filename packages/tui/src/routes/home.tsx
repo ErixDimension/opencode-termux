@@ -79,15 +79,15 @@ export function Home() {
   })
 
   return (
-    <>
+    <box flexGrow={1} minHeight={0} flexDirection="column">
       <box
         flexGrow={1}
+        minHeight={0}
         alignItems="center"
+        justifyContent="center"
         paddingLeft={dimensions().width < 44 ? 1 : 2}
         paddingRight={dimensions().width < 44 ? 1 : 2}
       >
-        <box flexGrow={1} minHeight={0} />
-        <box height={3} minHeight={0} flexShrink={1} />
         <box
           flexShrink={0}
           onSizeChange={function () {
@@ -126,7 +126,7 @@ export function Home() {
           ) : null
         }}
       </Show>
-    </>
+    </box>
   )
 }
 

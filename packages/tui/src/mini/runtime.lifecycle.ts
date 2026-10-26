@@ -162,7 +162,7 @@ export async function createRuntimeLifecycle(input: LifecycleInput): Promise<Lif
     stdin: input.host.terminal.stdin,
     targetFps: 30,
     maxFps: 60,
-    useMouse: false,
+    useMouse: tuiConfig.mouse,
     autoFocus: false,
     openConsoleOnError: false,
     exitOnCtrlC: false,
